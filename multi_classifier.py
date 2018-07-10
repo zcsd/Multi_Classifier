@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
 from keras.models import Sequential
@@ -20,6 +21,8 @@ epochs = 100
 # batch size used by flow_from_directory and predict_generator
 batch_size = 16
 
+total_counter = 0
+correct_counter = 0
 
 def save_bottlebeck_features():
     # build the VGG16 network
@@ -153,22 +156,21 @@ def train_top_model():
     plt.show()
 
 
-def predict():
+def predict(image_path):
     # load the class_indices saved in the earlier step
     class_dictionary = np.load('class_indices.npy').item()
 
     num_classes = len(class_dictionary)
 
     # add the path to your test image below
-    image_path = '/home/zichun/classfication/test/gray_complete/12.jpg'
+    #image_path = '/home/zichun/classfication/test/gray_complete/12.jpg'
 
     orig = cv2.imread(image_path)
 
-    print("[INFO] loading and preprocessing image...")
     image = load_img(image_path, target_size=(224, 224))
     image = img_to_array(image)
 
-    # important! otherwise the predictions will be '0'6
+    # important! otherwise the predictions will be '0'
     image = image / 255
 
     image = np.expand_dims(image, axis=0)
@@ -200,21 +202,41 @@ def predict():
     inv_map = {v: k for k, v in class_dictionary.items()}
 
     label = inv_map[inID]
+    
+    result = "Wrong"
 
+    global correct_counter
+    if label in image_path:
+        correct_counter+=1
+        result = "Correct"
+    
     # get the prediction label
-    print("Image ID: {}, Label: {}, Confidence: {}".format(inID, label, confidence))
+    print("  Result: {}; Label: {}; Confidence: {}; All: {}".format(result, label, confidence, probabilities[0]))
+    print("  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
     # display the predictions with the image
-    cv2.putText(orig, "Predicted: {}".format(label), (10, 30),
-                cv2.FONT_HERSHEY_PLAIN, 1.5, (43, 99, 255), 2)
+    #cv2.putText(orig, "Predicted: {}".format(label), (10, 30), cv2.FONT_HERSHEY_PLAIN, 1.5, (43, 99, 255), 2)
 
-    cv2.imshow("Classification", orig)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
+    #cv2.imshow("Classification", orig)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
 
 #save_bottlebeck_features()
 #train_top_model()
-predict()
+#predict()
 
-cv2.destroyAllWindows()
+
+base_test_image_path = "/home/zichun/multi_classifier/test"
+
+for folder in os.listdir(base_test_image_path):
+    print("----------------------------------------")
+    print("  Testing in " + folder + " folder...")
+    current_folder_path = base_test_image_path + "/" + folder
+    for file in os.listdir(current_folder_path):
+        total_counter+=1
+        print("  Testing " + file + " in " + folder + "folder...")
+        current_file_path = current_folder_path + "/" + file
+        predict(current_file_path)
+
+print("Total testing: " + str(total_counter) + " Correct: " + str(correct_counter))  
+#cv2.destroyAllWindows()
