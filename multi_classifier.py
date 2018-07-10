@@ -5,7 +5,8 @@ from keras.models import Sequential
 from keras.layers import Dropout, Flatten, Dense
 from keras import applications
 from keras.utils.np_utils import to_categorical
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
+import time
 import math
 import cv2
 
@@ -131,7 +132,7 @@ def train_top_model():
 
     print("[INFO] accuracy: {:.2f}%".format(eval_accuracy * 100))
     print("[INFO] Loss: {}".format(eval_loss))
-
+'''
     plt.figure(1)
 
     # summarize history for accuracy
@@ -154,9 +155,10 @@ def train_top_model():
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
     plt.show()
-
+'''
 
 def predict(image_path):
+    time_start = time.time()
     # load the class_indices saved in the earlier step
     class_dictionary = np.load('class_indices.npy').item()
 
@@ -202,16 +204,18 @@ def predict(image_path):
     inv_map = {v: k for k, v in class_dictionary.items()}
 
     label = inv_map[inID]
-    
+
     result = "Wrong"
+    time_end = time.time()
+    time_interval = time_end - time_start
 
     global correct_counter
     if label in image_path:
         correct_counter+=1
         result = "Correct"
-    
+
     # get the prediction label
-    print("  Result: {}; Label: {}; Confidence: {}; All: {}".format(result, label, confidence, probabilities[0]))
+    print("  Result: {}; Time: {:.2f}s; Label: {}; Confidence: {:.6f}; All: {}".format(result, time_interval, label, confidence, probabilities[0]))
     print("  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
     # display the predictions with the image
@@ -226,7 +230,7 @@ def predict(image_path):
 #predict()
 
 
-base_test_image_path = "/home/zichun/multi_classifier/test"
+base_test_image_path = "/Users/zichun/multi_classifier/test"
 
 for folder in os.listdir(base_test_image_path):
     print("----------------------------------------")
@@ -234,9 +238,9 @@ for folder in os.listdir(base_test_image_path):
     current_folder_path = base_test_image_path + "/" + folder
     for file in os.listdir(current_folder_path):
         total_counter+=1
-        print("  Testing " + file + " in " + folder + "folder...")
+        print("  Testing " + file + " in " + folder + " folder...")
         current_file_path = current_folder_path + "/" + file
         predict(current_file_path)
 
-print("Total testing: " + str(total_counter) + " Correct: " + str(correct_counter))  
+print("Total testing: " + str(total_counter) + ", Correct: " + str(correct_counter))
 #cv2.destroyAllWindows()
