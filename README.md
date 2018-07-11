@@ -1,7 +1,7 @@
 # **Multi-Class Classfier**
 
-**1. Keras**
+**1. Keras(v2.1.6)**
 
-**2. Tensorflow Backgend**
+**2. Tensorflow(v1.8.0) Backgend**
 
-*Jul 10 2018*
+*Jul 11 2018*
