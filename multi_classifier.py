@@ -236,7 +236,7 @@ elif mode == 1:
     image_path = "test/gray_complete/heel_lining_red-CL_gray-BG_2.jpg"
     predict(image_path)
 elif mode == 2:
-    base_test_image_path = "test"
+    base_test_image_path = "test+"
     # load the class_indices saved in the earlier step
     class_dictionary = np.load('class_indices.npy').item()
     num_classes = len(class_dictionary)
