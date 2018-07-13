@@ -20,11 +20,11 @@ train_data_dir = 'data/train'
 validation_data_dir = 'data/validation'
 
 # number of epochs to train top model
-epochs = 100
+epochs = 300
 # batch size used by flow_from_directory and predict_generator
 batch_size = 16
 
-mode = 2 # 0 for training, 1 for single predict, 2 for batch predict
+mode = 0 # 0 for training, 1 for single predict, 2 for batch predict
 total_counter = 0
 correct_counter = 0
 total_time = 0.0
