@@ -20,11 +20,11 @@ train_data_dir = 'data/train'
 validation_data_dir = 'data/validation'
 
 # number of epochs to train top model
-epochs = 300
+epochs = 100
 # batch size used by flow_from_directory and predict_generator
 batch_size = 16
 
-mode = 0 # 0 for training, 1 for single predict, 2 for batch predict
+mode = 2 # 0 for training, 1 for single predict, 2 for batch predict
 total_counter = 0
 correct_counter = 0
 total_time = 0.0
@@ -119,7 +119,7 @@ def train_top_model():
     model.add(Flatten(input_shape=train_data.shape[1:]))
     model.add(Dense(256, activation='relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(num_classes, activation='sigmoid'))
+    model.add(Dense(num_classes, activation='softmax'))
 
     model.compile(optimizer='rmsprop',
                   loss='categorical_crossentropy', metrics=['accuracy'])
@@ -185,7 +185,7 @@ def predict(image_path):
     model.add(Flatten(input_shape=bottleneck_prediction.shape[1:]))
     model.add(Dense(256, activation='relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(num_classes, activation='sigmoid'))
+    model.add(Dense(num_classes, activation='softmax'))
 
     model.load_weights(top_model_weights_path)
 
@@ -236,7 +236,7 @@ elif mode == 1:
     image_path = "test/gray_complete/heel_lining_red-CL_gray-BG_2.jpg"
     predict(image_path)
 elif mode == 2:
-    base_test_image_path = "test+"
+    base_test_image_path = "test--"
     # load the class_indices saved in the earlier step
     class_dictionary = np.load('class_indices.npy').item()
     num_classes = len(class_dictionary)
