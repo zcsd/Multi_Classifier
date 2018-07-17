@@ -29,6 +29,8 @@ total_counter = 0
 correct_counter = 0
 total_time = 0.0
 
+model_1 = applications.VGG16(include_top=False, weights='imagenet')
+
 def save_bottlebeck_features():
     # build the VGG16 network
     model = applications.VGG16(include_top=False, weights='imagenet')
@@ -162,8 +164,8 @@ def train_top_model():
 
 
 def predict(image_path):
+    
     time_start = time.time()
-
     #orig = cv2.imread(image_path)
 
     image = load_img(image_path, target_size=(224, 224))
@@ -171,30 +173,31 @@ def predict(image_path):
 
     # important! otherwise the predictions will be '0'
     image = image / 255
-
     image = np.expand_dims(image, axis=0)
 
     # build the VGG16 network
-    model = applications.VGG16(include_top=False, weights='imagenet')
+    global model_1
+    print(model_1)
 
     # get the bottleneck prediction from the pre-trained VGG16 model
-    bottleneck_prediction = model.predict(image)
-
+    #global model_1
+    bottleneck_prediction = model_1.predict(image)
+    K.clear_session()
     # build top model
-    model = Sequential()
-    model.add(Flatten(input_shape=bottleneck_prediction.shape[1:]))
-    model.add(Dense(256, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(num_classes, activation='softmax'))
+    model_2 = Sequential()
+    model_2.add(Flatten(input_shape=bottleneck_prediction.shape[1:]))
+    model_2.add(Dense(256, activation='relu'))
+    model_2.add(Dropout(0.5))
+    model_2.add(Dense(num_classes, activation='softmax'))
 
-    model.load_weights(top_model_weights_path)
+    model_2.load_weights(top_model_weights_path)
 
     # use the bottleneck prediction on the top model to get the final
     # classification
-    class_predicted = model.predict_classes(bottleneck_prediction)
+    class_predicted = model_2.predict_classes(bottleneck_prediction)
 
-    probabilities = model.predict_proba(bottleneck_prediction)
-    
+    probabilities = model_2.predict_proba(bottleneck_prediction)
+
     K.clear_session()
 
     inID = class_predicted[0]
@@ -214,7 +217,7 @@ def predict(image_path):
         result = "Correct"
     
     # get the prediction label
-    print("  Result: {}; Time: {:.2f}s; Label: {}; Confidence: {:.6f}; All: {}".format(result, time_interval, label, confidence, probabilities[0]))
+    print("  Result: {}; Time: {:.2f}s; Label: {}; Confidence: {:.3f}; All: {}".format(result, time_interval, label, confidence, probabilities[0]))
     print("  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     
     global total_time
@@ -226,6 +229,7 @@ def predict(image_path):
     #cv2.waitKey(0)
     #cv2.destroyAllWindows()
 
+#model_1 = applications.VGG16(include_top=False, weights='imagenet')
 if mode == 0:
     save_bottlebeck_features()
     train_top_model()
@@ -236,7 +240,8 @@ elif mode == 1:
     image_path = "test/gray_complete/heel_lining_red-CL_gray-BG_2.jpg"
     predict(image_path)
 elif mode == 2:
-    base_test_image_path = "test--"
+
+    base_test_image_path = "test+"
     # load the class_indices saved in the earlier step
     class_dictionary = np.load('class_indices.npy').item()
     num_classes = len(class_dictionary)
