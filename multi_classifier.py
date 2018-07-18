@@ -24,7 +24,7 @@ epochs = 100
 # batch size used by flow_from_directory and predict_generator
 batch_size = 16
 
-mode = 2 # 0 for training, 1 for single predict, 2 for batch predict
+mode = 0 # 0 for training, 1 for single predict, 2 for batch predict
 total_counter = 0
 correct_counter = 0
 total_time = 0.0
@@ -231,8 +231,17 @@ def predict(image_path):
 
 #model_1 = applications.VGG16(include_top=False, weights='imagenet')
 if mode == 0:
+    time_start = time.time()
     save_bottlebeck_features()
+    time_mid = time.time()
     train_top_model()
+    time_end = time.time()
+    time_bb = time_mid - time_start
+    time_interval = time_end - time_start
+    time_top = time_end - time_mid
+    print("Total training time: {:.2f}s".format(time_interval))
+    print("Feature Extract time: {:.2f}s".format(time_bb))
+    print("Top model training time: {:.2f}s".format(time_top))
 elif mode == 1:
     # load the class_indices saved in the earlier step
     class_dictionary = np.load('class_indices.npy').item()
