@@ -24,12 +24,10 @@ epochs = 100
 # batch size used by flow_from_directory and predict_generator
 batch_size = 16
 
-mode = 0 # 0 for training, 1 for single predict, 2 for batch predict
+mode = 2 # 0 for training, 1 for single predict, 2 for batch predict
 total_counter = 0
 correct_counter = 0
 total_time = 0.0
-
-model_1 = applications.VGG16(include_top=False, weights='imagenet')
 
 def save_bottlebeck_features():
     # build the VGG16 network
@@ -176,14 +174,18 @@ def predict(image_path):
     image = np.expand_dims(image, axis=0)
 
     # build the VGG16 network
-    global model_1
-    print(model_1)
-
+    time_build_start = time.time()
+    model_1 = applications.VGG16(include_top=False, weights='imagenet')
+    time_build_end = time.time()
     # get the bottleneck prediction from the pre-trained VGG16 model
     #global model_1
+    time_feat_start = time.time()
     bottleneck_prediction = model_1.predict(image)
+    time_feat_end = time.time()
+
     K.clear_session()
     # build top model
+    time_top_start = time.time()
     model_2 = Sequential()
     model_2.add(Flatten(input_shape=bottleneck_prediction.shape[1:]))
     model_2.add(Dense(256, activation='relu'))
@@ -191,13 +193,15 @@ def predict(image_path):
     model_2.add(Dense(num_classes, activation='softmax'))
 
     model_2.load_weights(top_model_weights_path)
+    time_top_end = time.time()
 
     # use the bottleneck prediction on the top model to get the final
     # classification
+    time_pre_start = time.time()
     class_predicted = model_2.predict_classes(bottleneck_prediction)
 
     probabilities = model_2.predict_proba(bottleneck_prediction)
-
+    time_pre_end = time.time()
     K.clear_session()
 
     inID = class_predicted[0]
@@ -210,7 +214,12 @@ def predict(image_path):
     result = "Wrong"
     time_end = time.time()
     time_interval = time_end - time_start
-
+    time_build = time_build_end - time_build_start
+    time_feat = time_feat_end - time_feat_start
+    time_top = time_top_end - time_top_start
+    time_pre = time_pre_end - time_pre_start
+    
+    print("  Total time: {:.2f}s; Build VGG Time: {:.2f}s; Feature Extract Time: {:.2f}s; Build Top Time: {:.2f}s; Predict Time: {:.2f}s".format(time_interval, time_build, time_feat, time_top, time_pre))
     global correct_counter
     if label in image_path:
         correct_counter+=1
